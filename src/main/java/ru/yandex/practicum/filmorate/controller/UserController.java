@@ -4,9 +4,12 @@ import io.micrometer.common.util.StringUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 
@@ -33,26 +36,45 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@Valid @RequestBody User user) {
+    public ResponseEntity<User> create(@Valid @RequestBody User user) {
         log.info("POST / user / {}", user.getLogin());
+
+        if (user.getLogin() == null || user.getLogin().isBlank()) {
+            throw new ValidationException("Логин не может быть пустым");
+        }
+
+        if (user.getEmail() == null || !user.getEmail().contains("@")) {
+            throw new ValidationException("Неверный формат email");
+        }
+
+        if (user.getBirthday() == null) {
+            throw new ValidationException("Дата рождения обязательна");
+        }
+
         user.setId(getNextId());
-        // Если имя не задано, используем логин
-        if (user.getName().isBlank()) {
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
 
-        return user;
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
-
     @PutMapping
-    public User update(@Valid @RequestBody User user) {
+    public ResponseEntity<User> update(@Valid @RequestBody User user) {
         log.info("PUT / user / {}", user.getLogin());
+
+        if (user.getId() == null) {
+            throw new ValidationException("ID пользователя обязателен");
+        }
 
         User existingUser = users.get(user.getId());
         if (existingUser == null) {
             throw new NotFoundException("Пользователь не найден");
+        }
+
+        if (user.getEmail() != null && !user.getEmail().contains("@")) {
+            throw new ValidationException("Неверный формат email");
         }
 
         existingUser.setEmail(user.getEmail());
@@ -60,7 +82,7 @@ public class UserController {
         existingUser.setName(StringUtils.isBlank(user.getName()) ? user.getLogin() : user.getName());
         existingUser.setBirthday(user.getBirthday());
 
-        return existingUser;
+        return ResponseEntity.ok(existingUser);
     }
 
     @GetMapping

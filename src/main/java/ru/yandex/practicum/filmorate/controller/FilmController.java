@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
+
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -27,17 +29,67 @@ public class FilmController {
     private final Map<Integer, Film> films = new HashMap<>();
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
+    public ResponseEntity<Film> create(@Valid @RequestBody Film film) {
         log.info("POST / film / {}", film.getName());
-        if (film.getDescription() == null || film.getDescription().isBlank()) {
-            throw new ValidationException("Описание не может быть пустым");
+
+        if (film.getName() == null || film.getName().isBlank()) {
+            throw new ValidationException("Название фильма не может быть пустым");
+        }
+
+        if (film.getReleaseDate() == null) {
+            film.setReleaseDate(LocalDate.from(Instant.now()));
+        }
+
+        if (film.getDuration() <= 0) {
+            throw new ValidationException("Продолжительность должна быть больше нуля");
         }
 
         film.setId(getNextId());
-        film.setReleaseDate(LocalDate.from(Instant.now()));
-        // сохраняем новую публикацию в памяти приложения
         films.put(film.getId(), film);
-        return film;
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(film);
+    }
+
+    @PutMapping
+    public ResponseEntity<Film> update(@Valid @RequestBody Film newFilm) {
+        log.info("PUT / film / {}", newFilm.getName());
+
+        if (newFilm.getId() == null) {
+            throw new ValidationException("ID фильма обязателен");
+        }
+
+        if (!films.containsKey(newFilm.getId())) {
+            throw new NotFoundException("Фильм не найден");
+        }
+
+        Film oldFilm = films.get(newFilm.getId());
+
+        if (newFilm.getName() != null && !newFilm.getName().isBlank()) {
+            if (newFilm.getName().length() < 2) {
+                throw new ValidationException("Название должно содержать минимум 2 символа");
+            }
+            oldFilm.setName(newFilm.getName());
+        }
+
+        if (newFilm.getDescription() != null) {
+            if (newFilm.getDescription().isBlank()) {
+                throw new ValidationException("Описание не может быть пустым");
+            }
+            oldFilm.setDescription(newFilm.getDescription());
+        }
+
+        if (newFilm.getReleaseDate() != null) {
+            oldFilm.setReleaseDate(newFilm.getReleaseDate());
+        }
+
+        if (newFilm.getDuration() != null) {
+            if (newFilm.getDuration() <= 0) {
+                throw new ValidationException("Продолжительность должна быть больше нуля");
+            }
+            oldFilm.setDuration(newFilm.getDuration());
+        }
+
+        return ResponseEntity.ok(oldFilm);
     }
 
     private int getNextId() {
@@ -49,27 +101,9 @@ public class FilmController {
         return ++currentMaxId;
     }
 
-    @PutMapping
-    public Film update(@Valid @RequestBody Film newFilm) {
-        log.info("PUT / film / {}", newFilm.getName());
-        if (newFilm.getId() == null) {
-            throw new ConditionsNotMetException("Id должен быть указан");
-        }
-        if (films.containsKey(newFilm.getId())) {
-            Film oldFilm = films.get(newFilm.getId());
-            if (newFilm.getDescription() == null || newFilm.getDescription().isBlank()) {
-                throw new ConditionsNotMetException("Описание не может быть пустым");
-            }
-            oldFilm.setDescription(newFilm.getDescription());
-            return oldFilm;
-        }
-        throw new NotFoundException("Пост с id = " + newFilm.getId() + " не найден");
-    }
-
     @GetMapping
     public List<Film> findAllFilms() {
         log.info("GET / films");
         return new ArrayList<>(films.values());
     }
-
 }
