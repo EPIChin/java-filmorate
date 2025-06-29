@@ -32,7 +32,7 @@ public class FilmController {
         if (film.getDescription() == null || film.getDescription().isBlank()) {
             throw new ValidationException("Описание не может быть пустым");
         }
-        // формируем дополнительные данные
+
         film.setId(getNextId());
         film.setReleaseDate(LocalDate.from(Instant.now()));
         // сохраняем новую публикацию в памяти приложения
