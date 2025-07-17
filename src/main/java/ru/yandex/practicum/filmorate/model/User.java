@@ -16,7 +16,7 @@ import java.util.Set;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
 public class User {
-    private Integer id;
+    private Long id;
 
     @NotBlank(message = "Электронная почта не может быть пустой.")
     @Email(message = "Электронная почта должна содержать символ @.")

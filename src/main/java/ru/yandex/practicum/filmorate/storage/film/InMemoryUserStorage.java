@@ -10,7 +10,7 @@ import java.util.*;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
-    private final Map<Integer, User> users = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
 
     @Override
     public void save(User user) {
@@ -24,7 +24,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(long id) {
         users.remove(id);
     }
 
@@ -47,14 +47,14 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> getById(int id) {
+    public Optional<User> getById(long id) {
 
         return Optional.ofNullable(users.get(id));
     }
 
-    private int getNextId() {
+    private long getNextId() {
         return users.keySet().stream()
-                .mapToInt(Integer::intValue)
+                .mapToInt(Long::intValue)
                 .max()
                 .orElse(0) + 1;
     }

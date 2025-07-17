@@ -22,19 +22,50 @@ public class FilmServiceImpl implements FilmService {
     private final UserStorage userStorage;
 
     @Override
-    public boolean addLike(Integer filmId, Integer userId) {
-        log.info("Попытка добавить лайк фильму {} пользователем {}", filmId, userId);
+    public Film createFilm(Film film) {
+        log.info("Создание нового фильма: {}", film.getName());
+        filmStorage.save(film);
+        return film;
+    }
 
+    @Override
+    public Film updateFilm(Film film) {
+        log.info("Обновление фильма с ID: {}", film.getId());
+        Optional<Film> existingFilm = filmStorage.getById(film.getId());
+        if (existingFilm.isPresent()) {
+            filmStorage.update(film);
+            return film;
+        }
+        throw new ResourceNotFoundException("Фильм не найден");
+    }
+
+    @Override
+    public List<Film> getAllFilms() {
+        log.info("Получение всех фильмов");
+        return filmStorage.getAll();
+    }
+
+    @Override
+    public Optional<Film> getFilmById(Integer filmId) {
+        log.info("Поиск фильма по ID: {}", filmId);
+        return filmStorage.getById(filmId);
+    }
+
+    @Override
+    public boolean addLike(Integer filmId, Integer userId) {
+        log.info("Добавление лайка к фильму {} пользователем {}", filmId, userId);
         Optional<User> userOpt = userStorage.getById(userId);
         if (userOpt.isEmpty()) {
             throw new ResourceNotFoundException("Пользователь не найден");
         }
 
+        Film filmExc = filmStorage.getById(filmId)
+                .orElseThrow(() -> new ResourceNotFoundException("Фильм не найден"));
+
         return filmStorage.getById(filmId)
                 .map(film -> {
                     if (!film.getLikedUsers().contains(userId)) {
                         film.getLikedUsers().add(userId);
-                        film.setLikesCount(film.getLikesCount() + 1);
                         filmStorage.update(film);
                         return true;
                     }
@@ -45,17 +76,18 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public boolean removeLike(Integer filmId, Integer userId) {
-        log.info("Попытка удалить лайк фильма {} пользователем {}", filmId, userId);
-
+        log.info("Удаление лайка фильма {} пользователем {}", filmId, userId);
         Optional<User> userOpt = userStorage.getById(userId);
         if (userOpt.isEmpty()) {
             throw new ResourceNotFoundException("Пользователь не найден");
         }
 
+        Film filmExc = filmStorage.getById(filmId)
+                .orElseThrow(() -> new ResourceNotFoundException("Фильм не найден"));
+
         return filmStorage.getById(filmId)
                 .map(film -> {
                     if (film.getLikedUsers().remove(userId)) {
-                        film.setLikesCount(film.getLikesCount() - 1);
                         filmStorage.update(film);
                         return true;
                     }
@@ -65,12 +97,12 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getMostPopularFilms() {
-        log.info("Получение топ-10 самых популярных фильмов");
-        return filmStorage.getAll()
-                .stream()
-                .sorted(Comparator.comparingLong(Film::getLikesCount).reversed())
-                .limit(10)
+    public List<Film> getMostPopularFilms(int count) {
+        log.info("Получение топ-{} самых популярных фильмов", count);
+        return filmStorage.getAll().stream()
+                .sorted(Comparator.comparingInt(Film::getLikedUsersSize).reversed()
+                        .thenComparing(Film::getId))
+                .limit(count)
                 .collect(Collectors.toList());
     }
 }

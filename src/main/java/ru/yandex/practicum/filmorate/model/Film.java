@@ -8,10 +8,9 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-
 @Data
 public class Film {
-    private Integer id;
+    private Long id;
 
     @NotBlank(message = "Введите название фильма.")
     private String name;
@@ -27,7 +26,9 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть больше 0.")
     private Integer duration;
 
-    private Long likesCount = 0L;
-
     private Set<Integer> likedUsers = new HashSet<>();
+
+    public int getLikedUsersSize() {
+        return likedUsers.size();
+    }
 }

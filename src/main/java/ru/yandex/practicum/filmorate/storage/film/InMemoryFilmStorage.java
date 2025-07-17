@@ -8,7 +8,7 @@ import java.util.*;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
 
     @Override
     public void save(Film film) {
@@ -19,7 +19,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(long id) {
         films.remove(id);
     }
 
@@ -37,13 +37,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> getById(int id) {
+    public Optional<Film> getById(long id) {
         return Optional.ofNullable(films.get(id));
     }
 
-    private int getNextId() {
+    private long getNextId() {
         return films.keySet().stream()
-                .mapToInt(Integer::intValue)
+                .mapToInt(Long::intValue)
                 .max()
                 .orElse(0) + 1;
     }

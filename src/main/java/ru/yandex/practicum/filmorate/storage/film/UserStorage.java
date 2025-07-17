@@ -8,11 +8,11 @@ import java.util.Optional;
 public interface UserStorage {
     void save(User user);
 
-    void delete(int id);
+    void delete(long id);
 
     void update(User user);
 
     List<User> getAll();
 
-    Optional<User> getById(int id);
+    Optional<User> getById(long id);
 }
