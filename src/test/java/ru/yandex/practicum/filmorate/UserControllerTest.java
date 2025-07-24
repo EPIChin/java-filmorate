@@ -10,6 +10,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ public class UserControllerTest {
 
     @BeforeEach
     public void beforeEach() {
-        user = new User(1, "name@ya.ru", "login", "name", LocalDate.of(2000, 01, 01));
+        user = new User(1L, "name@ya.ru", "login", "name", LocalDate.of(2000, 1, 1), new HashSet<>());
     }
 
     @Test
