@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.annotation.ValidReleaseDate;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Data
@@ -31,4 +32,8 @@ public class Film {
     public int getLikedUsersSize() {
         return likedUsers.size();
     }
+    /*
+    @NotNull
+    private Mpa mpa;
+    private final LinkedHashSet<Genre> genres = new LinkedHashSet<>();*/
 }
