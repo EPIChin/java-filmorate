@@ -1,22 +1,55 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 
-public interface FilmService {
-    Film createFilm(Film film);
+@Service
+public class FilmService {
 
-    Film updateFilm(Film film);
+    @Autowired
+    @Qualifier("filmDbStorage")
+    private final FilmStorage filmStorage;
+    @Autowired
+    private final LikeStorage likeStorage;
 
-    List<Film> getAllFilms();
+    public FilmService(FilmStorage filmStorage, LikeStorage likeStorage) {
+        this.filmStorage = filmStorage;
+        this.likeStorage = likeStorage;
+    }
 
-    Optional<Film> getFilmById(Integer filmId);
+    public Collection<Film> findAll() {
+        return filmStorage.findAll();
+    }
 
-    boolean addLike(Integer filmId, Integer userId);
+    public Film create(Film film) {
+        return filmStorage.create(film);
+    }
 
-    boolean removeLike(Integer filmId, Integer userId);
+    public Film update(Film film) {
+        return filmStorage.update(film);
+    }
 
-    List<Film> getMostPopularFilms(int count);
+    public Optional<Film> findById(long filmId) {
+        return filmStorage.findById(filmId);
+    }
+
+    public void addLike(long filmId, long userId) {
+        likeStorage.addLike(filmId, userId);
+    }
+
+    public void deleteLike(long filmId, long userId) {
+        likeStorage.deleteLike(filmId, userId);
+    }
+
+    public Collection<Film> getPopularFilms(int count) {
+        return filmStorage.getPopularFilms(count);
+    }
 }
+
