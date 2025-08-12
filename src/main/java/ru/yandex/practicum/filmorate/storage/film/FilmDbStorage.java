@@ -40,7 +40,13 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN ratings r ON f.rating_id = r.id " +
                 "ORDER BY f.id";
 
-        return jdbc.query(sqlQuery, mapper);
+        List<Film> films = jdbc.query(sqlQuery, mapper);
+
+        for (Film film : films) {
+            genreDbStorage.loadGenresForFilm(film);
+        }
+        
+        return films;
     }
 
     @Override
@@ -84,10 +90,13 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> getPopularFilms(int count) {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("count", count);
-        final String sqlQuery = "SELECT f.*, r.name AS rating_name, r.description AS rating_description FROM films AS f " +
+        final String sqlQuery = "SELECT f.*, r.name AS rating_name, r.description AS rating_description " +
+                "FROM films AS f " +
                 "LEFT JOIN ratings r ON f.rating_id = r.id " +
-                "JOIN film_likes AS fl ON f.id = fl.film_id " +
-                "GROUP BY f.id ORDER BY COUNT(fl.*) DESC LIMIT :count";
+                "LEFT JOIN film_likes AS fl ON f.id = fl.film_id " +
+                "GROUP BY f.id, r.name, r.description " +
+                "ORDER BY COUNT(fl.user_id) DESC " +
+                "LIMIT :count";
 
         return jdbc.query(sqlQuery, params, mapper);
     }

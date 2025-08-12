@@ -23,7 +23,7 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Collection<Genre> findAll() {
-        log.info("Возвращаем список пользователей");
+        log.info("Возвращаем список жанров");
         return jdbc.query("SELECT * FROM genres ORDER BY id", mapper);
     }
 

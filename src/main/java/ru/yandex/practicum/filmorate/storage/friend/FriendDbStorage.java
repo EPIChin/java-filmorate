@@ -150,13 +150,13 @@ public class FriendDbStorage implements FriendStorage {
                 userId
         );
 
-        if (rowsUpdated != 0) {
+        if (rowsUpdated > 0) {
             final String sqlInsertQuery = "INSERT INTO user_friends (user_id, friend_id, is_confirmed) " +
                     "VALUES (?, ?, true)";
             jdbc.update(sqlInsertQuery, userId, friendShipRequestUserId);
-            return false;
+            return true;
         }
 
-        return true;
+        return false; /*Исправил как понял:) может вообще убрать подтверждение вроде на вебинаре говорили можно без него*/
     }
 }

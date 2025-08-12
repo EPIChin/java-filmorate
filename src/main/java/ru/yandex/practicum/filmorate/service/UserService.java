@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
@@ -11,17 +11,13 @@ import java.util.Collection;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    @Autowired
-    @Qualifier("userDbStorage")
-    private final UserStorage userStorage;
-    @Autowired
-    private final FriendStorage friendStorage;
 
-    public UserService(UserStorage userStorage, FriendStorage friendStorage) {
-        this.userStorage = userStorage;
-        this.friendStorage = friendStorage;
-    }
+
+    private final UserStorage userStorage;
+
+    private final FriendStorage friendStorage;
 
     public Collection<User> findAll() {
         return userStorage.findAll();

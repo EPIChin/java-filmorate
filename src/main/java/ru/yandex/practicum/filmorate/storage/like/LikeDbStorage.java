@@ -25,7 +25,7 @@ public class LikeDbStorage implements LikeStorage {
         }
 
         if (!userDbStorage.isUserExist(userId)) {
-            throw new ResourceNotFoundException("Пользователь с id = " + filmId + " не найден");
+            throw new ResourceNotFoundException("Пользователь с id = " + userId + " не найден");
         }
 
         final String sqlQuery = "INSERT INTO film_likes (film_id, user_id) " +

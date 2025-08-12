@@ -44,8 +44,7 @@ public class UserDbStorage implements UserStorage {
             user.setName(user.getLogin());
         }
 
-        final String sqlQuery = "INSERT INTO users(email, login, name, birthday) " +
-                "VALUES (?, ?, ?, ?)";
+        final String sqlQuery = "INSERT INTO users(email, login, name, birthday) VALUES (?, ?, ?, ?)";
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbc.update(connection -> {
@@ -58,7 +57,6 @@ public class UserDbStorage implements UserStorage {
         }, keyHolder);
 
         Long id = keyHolder.getKeyAs(Long.class);
-
         if (id != null) {
             user.setId(id);
             log.info("Создание пользователя завершено" + user);
@@ -78,15 +76,13 @@ public class UserDbStorage implements UserStorage {
         }
 
         if (isUserExist(user.getId())) {
-            final String sqlQuery = "UPDATE users " +
-                    "SET email = ?, login = ?, name = ?, birthday = ? " +
-                    "WHERE id = ?";
+            final String sqlQuery = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
             int rowsUpdated = jdbc.update(
                     sqlQuery,
                     user.getEmail(),
                     user.getLogin(),
                     user.getName(),
-                    user.getBirthday(),
+                    Date.valueOf(user.getBirthday()),
                     user.getId()
             );
 
