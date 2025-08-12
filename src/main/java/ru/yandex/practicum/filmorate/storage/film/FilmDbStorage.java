@@ -45,7 +45,6 @@ public class FilmDbStorage implements FilmStorage {
         for (Film film : films) {
             genreDbStorage.loadGenresForFilm(film);
         }
-        
         return films;
     }
 
