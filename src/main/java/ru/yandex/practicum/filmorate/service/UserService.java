@@ -1,23 +1,58 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.List;
-import java.util.Set;
+import java.util.Collection;
+import java.util.Optional;
 
-public interface UserService {
+@Service
+@RequiredArgsConstructor
+public class UserService {
 
-    User create(User user);
 
-    User update(User user);
+    private final UserStorage userStorage;
 
-    List<User> findAll();
+    private final FriendStorage friendStorage;
 
-    void addFriend(int id, int friendId);
+    public Collection<User> findAll() {
+        return userStorage.findAll();
+    }
 
-    void removeFriend(int id, int friendId);
+    public User create(User user) {
+        return userStorage.create(user);
+    }
 
-    Set<Integer> getFriends(int id);
+    public User update(User user) {
+        return userStorage.update(user);
+    }
 
-    Set<Integer> getCommonFriends(int id, int otherId);
+    public Optional<User> findById(long userId) {
+        return userStorage.findById(userId);
+    }
+
+    public void addFriend(long userId, long friendId) {
+        friendStorage.addFriend(userId, friendId);
+    }
+
+    public void deleteFriend(long userId, long friendId) {
+        friendStorage.deleteFriend(userId, friendId);
+    }
+
+    public Collection<User> getFriends(long userId) {
+        return friendStorage.getFriends(userId);
+    }
+
+    public Collection<User> getIntersectFriends(long userId, long otherId) {
+        return friendStorage.getIntersectFriends(userId, otherId);
+    }
+
+    public boolean confirmedFriendShip(long userId, long friendShipRequestUserId) {
+        return friendStorage.confirmFriendShip(userId, friendShipRequestUserId);
+    }
 }
+

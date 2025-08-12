@@ -1,22 +1,67 @@
 package ru.yandex.practicum.filmorate.service;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ValidationException;
+import jakarta.validation.Validator;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public interface FilmService {
-    Film createFilm(Film film);
+@Service
+@RequiredArgsConstructor
+public class FilmService {
+    private final Validator validator;
 
-    Film updateFilm(Film film);
+    private final FilmStorage filmStorage;
 
-    List<Film> getAllFilms();
+    private final LikeStorage likeStorage;
 
-    Optional<Film> getFilmById(Integer filmId);
+    public Collection<Film> findAll() {
+        return filmStorage.findAll();
+    }
 
-    boolean addLike(Integer filmId, Integer userId);
+    public Film create(Film film) {
+        validateFilm(film);
+        return filmStorage.create(film);
+    }
 
-    boolean removeLike(Integer filmId, Integer userId);
+    public Film update(Film film) {
+        validateFilm(film);
+        return filmStorage.update(film);
+    }
 
-    List<Film> getMostPopularFilms(int count);
+    private void validateFilm(Film film) {
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+
+        if (!violations.isEmpty()) {
+            throw new ValidationException("Ошибка валидации фильма: " +
+                    violations.stream()
+                            .map(ConstraintViolation::getMessage)
+                            .collect(Collectors.joining(", ")));
+        }
+    }
+
+    public Optional<Film> findById(long filmId) {
+        return filmStorage.findById(filmId);
+    }
+
+    public void addLike(long filmId, long userId) {
+        likeStorage.addLike(filmId, userId);
+    }
+
+    public void deleteLike(long filmId, long userId) {
+        likeStorage.deleteLike(filmId, userId);
+    }
+
+    public Collection<Film> getPopularFilms(int count) {
+        return filmStorage.getPopularFilms(count);
+    }
 }
+

@@ -3,72 +3,63 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Friend;
+
+import java.util.Collection;
+import java.util.Optional;
+
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-@Validated
+@RestController
 @Slf4j
 @RequiredArgsConstructor
-@RestController
-@RequestMapping("users")
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
-    @PostMapping
-    public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        log.info("POST /user/{}", user.getLogin());
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(user));
-    }
-
-    @PutMapping
-    public ResponseEntity<User> update(@Valid @RequestBody User user) {
-        log.info("PUT /user/{}", user.getLogin());
-        return ResponseEntity.status(HttpStatus.OK).body(userService.update(user));
-    }
-
     @GetMapping
-    public List<User> findAll() {
-        log.info("GET /users");
+    public Collection<User> findAll() {
         return userService.findAll();
     }
 
-    @PutMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> addFriend(@PathVariable int id, @PathVariable int friendId) {
-        log.info("Добавление друга {} для пользователя {}", friendId, id);
-        userService.addFriend(id, friendId);
-        return ResponseEntity.ok().build();
+    @PostMapping
+    public User create(@Valid @RequestBody User user) {
+        return userService.create(user);
     }
 
-    @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> removeFriend(@PathVariable int id, @PathVariable int friendId) {
-        log.info("Удаление друга {} у пользователя {}", friendId, id);
-        userService.removeFriend(id, friendId);
-        return ResponseEntity.noContent().build();
+    @PutMapping
+    public User update(@Valid @RequestBody User user) {
+        return userService.update(user);
     }
 
-    @GetMapping("/{id}/friends")
-    public ResponseEntity<List<Friend>> getFriends(@PathVariable int id) {
-        log.info("Получение списка друзей для пользователя {}", id);
-        return ResponseEntity.ok(userService.getFriends(id).stream()
-                .map(Friend::new)
-                .collect(Collectors.toList()));
+    @GetMapping("/{userId}")
+    public Optional<User> findById(@PathVariable long userId) {
+        return userService.findById(userId);
     }
 
-    @GetMapping("/{id}/friends/common/{otherId}")
-    public ResponseEntity<List<Friend>> getCommonFriends(
-            @PathVariable int id,
-            @PathVariable int otherId) {
-        log.info("Поиск общих друзей между пользователями {} и {}", id, otherId);
-        return ResponseEntity.ok(userService.getCommonFriends(id, otherId).stream()
-                .map(Friend::new)
-                .collect(Collectors.toList()));
+    @PutMapping("/{userId}/friends/{friendId}")
+    public void addFriend(@PathVariable long userId, @PathVariable long friendId) {
+        userService.addFriend(userId, friendId);
+    }
+
+    @DeleteMapping("/{userId}/friends/{friendId}")
+    public void deleteFriend(@PathVariable long userId, @PathVariable long friendId) {
+        userService.deleteFriend(userId, friendId);
+    }
+
+    @GetMapping("/{userId}/friends")
+    public Collection<User> getFriends(@PathVariable long userId) {
+        return userService.getFriends(userId);
+    }
+
+    @GetMapping("/{userId}/friends/common/{otherId}")
+    public Collection<User> getIntersectFriends(@PathVariable long userId, @PathVariable long otherId) {
+        return userService.getIntersectFriends(userId, otherId);
+    }
+
+    @PutMapping("/{userId}/confirm-friend-ship/{friendId}")
+    public boolean confirmFriendShip(@PathVariable long userId, @PathVariable long friendId) {
+        return userService.confirmedFriendShip(userId, friendId);
     }
 }

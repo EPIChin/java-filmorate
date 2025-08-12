@@ -1,41 +1,47 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
-@Builder
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Getter
+@Setter
+@RequiredArgsConstructor
+@ToString
+@EqualsAndHashCode(of = {"email"})
 @AllArgsConstructor
+@Builder
 public class User {
-    private Long id;
-
-    @NotBlank(message = "Электронная почта не может быть пустой.")
-    @Email(message = "Электронная почта должна содержать символ @.")
+    private long id;
+    @NotBlank
+    @Email
     private String email;
-
-    @NotBlank(message = "Логин не может быть пустым.")
-    @Pattern(regexp = "^\\S*$", message = "Логин не может содержать пробелы.")
+    @NotBlank
+    @Pattern(regexp = "^\\S*$", message = "Поле не должно содержать пробелов")
     private String login;
-
     private String name;
-
     @NotNull
-    @PastOrPresent(message = "Дата рождения не может быть в будущем.")
+    @PastOrPresent
     private LocalDate birthday;
-
+    @JsonIgnore
     @Builder.Default
-    private Set<Integer> friends = new HashSet<>();
+    private Set<Long> friends = new HashSet<>();
+
+    public void addFriend(long friendId) {
+        this.friends.add(friendId);
+    }
+
+    public void deleteFriend(long friendId) {
+        this.friends.remove(friendId);
+    }
 }
-
-
 
 
